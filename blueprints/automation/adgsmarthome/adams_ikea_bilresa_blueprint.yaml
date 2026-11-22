@@ -1,5 +1,5 @@
 blueprint:
-  name: Ikea BILRESA scroll wheel (enhanced)
+  name: "Adam's IKEA Bilresa Blueprint"
   description: |
       Blueprint for Ikea Bilresa Matter (button and scroll wheel for 3 different channels)
 
@@ -20,9 +20,9 @@ blueprint:
 
       Version: 2026-11-22 (based on upstream 2026-04-06)
       Original: https://community.home-assistant.io/t/ikea-bilresa-scroll-wheel-blueprint-matter/965365
-      Fork: https://github.com/adgsmarthome/ikea-bilresa-blueprint
+      Fork: https://github.com/adgsmarthome/adams-ikea-bilresa-blueprint
   domain: automation
-  source_url: https://github.com/adgsmarthome/ikea-bilresa-blueprint/blob/main/blueprints/automation/adgsmarthome/ikea_bilresa_scroll_wheel_enhanced.yaml
+  source_url: https://github.com/adgsmarthome/adams-ikea-bilresa-blueprint/blob/main/blueprints/automation/adgsmarthome/adams_ikea_bilresa_blueprint.yaml
   homeassistant:
     min_version: "2024.10.0"
 
@@ -803,7 +803,7 @@ blueprint:
 
 
 # automation logic
-alias: Ikea_bilresa_scroll_wheel_enhanced
+alias: "Adam's IKEA Bilresa Blueprint"
 trigger:
   - event_type: state_changed
     event_data:

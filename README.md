@@ -1,13 +1,13 @@
-# IKEA BILRESA scroll wheel – enhanced blueprint
+# Adam's IKEA Bilresa Blueprint
 
 A Home Assistant automation blueprint for the IKEA BILRESA Matter scroll-wheel remote (3 channels).
 Fork of [jhol-byte's original blueprint](https://community.home-assistant.io/t/ikea-bilresa-scroll-wheel-blueprint-matter/965365)
 with three optional additions. Everything from the original works unchanged, and every new feature is off by default.
 
-[![Open your Home Assistant instance and show the blueprint import dialog with this blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fadgsmarthome%2Fikea-bilresa-blueprint%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fadgsmarthome%2Fikea_bilresa_scroll_wheel_enhanced.yaml)
+[![Open your Home Assistant instance and show the blueprint import dialog with this blueprint pre-filled.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fadgsmarthome%2Fadams-ikea-bilresa-blueprint%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fadgsmarthome%2Fadams_ikea_bilresa_blueprint.yaml)
 
 Or manually: **Settings → Automations & Scenes → Blueprints → Import Blueprint** and paste
-`https://github.com/adgsmarthome/ikea-bilresa-blueprint/blob/main/blueprints/automation/adgsmarthome/ikea_bilresa_scroll_wheel_enhanced.yaml`
+`https://github.com/adgsmarthome/adams-ikea-bilresa-blueprint/blob/main/blueprints/automation/adgsmarthome/adams_ikea_bilresa_blueprint.yaml`
 
 Requires Home Assistant 2024.10 or newer. The colour modes need `script.light_color_temp_helper` and `script.light_color_hs_helper`, the same as the original.
 
