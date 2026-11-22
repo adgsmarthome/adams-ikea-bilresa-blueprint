@@ -17,15 +17,19 @@ Requires Home Assistant 2024.10 or newer. The colour modes need `script.light_co
 *Section: "Scroll acceleration (fine / coarse)"*
 
 In **relaxed** mode the remote reports how many clicks one turn had (1–8). A turn below the
-**fast-spin threshold** (default 4 clicks) is *fine*, and a turn at or above it is *coarse*. Each level has its own
-multiplier, which applies to the normal step of every mode (dim %, colour temp K, hue °, volume %).
+**fast-spin threshold** is *fine* and a turn at or above it is *coarse*. Each level has its own **fixed step (%)**,
+and a separate **per click** toggle sets whether that step is multiplied by the number of clicks.
 
-| Default | Slow turn (fine ×0.5) | Fast spin (coarse ×1.5) |
-|---|---|---|
-| Dimmer step 10 % | 5 % per click | 15 % per click |
+| Defaults | Result |
+|---|---|
+| Threshold 5, fine 2 % **per click**, coarse 10 % **fixed** | 1–4 clicks → 2 / 4 / 6 / 8 %, 5–8 clicks → 10 % |
 
-User-defined scroll actions also get `scroll_speed`, `scroll_multiplier` and `scroll_units`.
+Steps are in dimmer percent. Colour temp, hue and volume scale the same way relative to their own step settings.
+User-defined scroll actions also get `scroll_speed`, `scroll_step_pct`, `scroll_units` and `scroll_multiplier`.
 Instant mode is not affected, because it reports one click at a time.
+
+**Separate dim step for instant mode:** *Global light settings → Dimmer step percentage (instant mode)*.
+`0` uses the relaxed-mode value.
 
 ### 2. Range-limit feedback ("duck")
 *Section: "Range-limit feedback (duck)"*

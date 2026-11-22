@@ -18,7 +18,7 @@ blueprint:
       Requires script.light_color_temp_helper and script.light_color_hs_helper for the color
       modes, exactly like the original blueprint.
 
-      Version: 2026-11-22.2 (based on upstream 2026-04-06)
+      Version: 2026-11-22.4 (based on upstream 2026-04-06)
       Original: https://community.home-assistant.io/t/ikea-bilresa-scroll-wheel-blueprint-matter/965365
       Fork: https://github.com/adgsmarthome/adams-ikea-bilresa-blueprint
   domain: automation
@@ -133,8 +133,9 @@ blueprint:
             - <scroll_clicks>: for <instant> mode always 1, for <relaxed> mode number between 1 to 8
             - <scroll_direction>: 'left' or 'right'
             - <scroll_speed>: 'fine', 'coarse' or 'normal' (see Scroll acceleration)
-            - <scroll_multiplier>: step multiplier for this turn (1 when acceleration is off)
-            - <scroll_units>: scroll_clicks x scroll_multiplier (use this instead of scroll_clicks to honour acceleration)
+            - <scroll_step_pct>: change for this turn in dimmer % (honours acceleration)
+            - <scroll_units>: same change in normal steps (use instead of scroll_clicks to honour acceleration)
+            - <scroll_multiplier>: scroll_units / scroll_clicks
           default: []
           selector:
             action: {}
@@ -233,8 +234,9 @@ blueprint:
             - <scroll_clicks>: for <instant> mode always 1, for <relaxed> mode number between 1 to 8
             - <scroll_direction>: 'left' or 'right'
             - <scroll_speed>: 'fine', 'coarse' or 'normal' (see Scroll acceleration)
-            - <scroll_multiplier>: step multiplier for this turn (1 when acceleration is off)
-            - <scroll_units>: scroll_clicks x scroll_multiplier (use this instead of scroll_clicks to honour acceleration)
+            - <scroll_step_pct>: change for this turn in dimmer % (honours acceleration)
+            - <scroll_units>: same change in normal steps (use instead of scroll_clicks to honour acceleration)
+            - <scroll_multiplier>: scroll_units / scroll_clicks
           default: []
           selector:
             action: {}
@@ -334,8 +336,9 @@ blueprint:
             - <scroll_clicks>: for <instant> mode always 1, for <relaxed> mode number between 1 to 8
             - <scroll_direction>: 'left' or 'right'
             - <scroll_speed>: 'fine', 'coarse' or 'normal' (see Scroll acceleration)
-            - <scroll_multiplier>: step multiplier for this turn (1 when acceleration is off)
-            - <scroll_units>: scroll_clicks x scroll_multiplier (use this instead of scroll_clicks to honour acceleration)
+            - <scroll_step_pct>: change for this turn in dimmer % (honours acceleration)
+            - <scroll_units>: same change in normal steps (use instead of scroll_clicks to honour acceleration)
+            - <scroll_multiplier>: scroll_units / scroll_clicks
           default: []
           selector:
             action: {}
@@ -349,11 +352,24 @@ blueprint:
       input:
         # light
         dim_step_pct:
-          name: Dimmer step percentage
-          description: "change in brightness in %"
+          name: Dimmer step percentage (relaxed mode)
+          description: "change in brightness in % per click in <relaxed> mode (and the base step for scroll acceleration)"
           default: 10
           selector:
             number:
+              mode: box
+        dim_step_pct_instant:
+          name: Dimmer step percentage (instant mode)
+          description: |
+            change in brightness in % per click in <instant> mode.
+            0 = use the relaxed-mode value.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 0.5
+              unit_of_measurement: "%"
               mode: box
         dim_min_pct:
           name: Minimum brightness
@@ -503,9 +519,12 @@ blueprint:
         accel_enabled:
           name: Enable fine / coarse scrolling
           description: |
-            Tells a slow, precise turn (a few clicks) apart from a fast spin (many clicks).
-            Each level multiplies the normal step of the active mode (dim %, color temp K,
-            hue degrees, volume %) per click.
+            Tells a slow, precise turn (a few clicks) apart from a fast spin (many clicks) and
+            gives each its own fixed step.
+
+            Steps are set in dimmer percent. Other modes scale the same way: a step equal to
+            <Dimmer step percentage> moves color temp by one <Color temperature step>, hue by one
+            <Color hue step> and volume by one <volume step percentage>.
 
             Works in <relaxed> evaluation mode, where the remote reports how many clicks one
             turn had (1-8). <instant> mode is not affected and always uses the normal step.
@@ -515,39 +534,54 @@ blueprint:
         accel_threshold_clicks:
           name: Fast-spin threshold (clicks)
           description: |
-            A turn with at least this many clicks counts as a fast spin (coarse).
+            A turn with at least this many clicks is a fast spin (coarse).
             Anything below it is a slow turn (fine).
-          default: 4
+            Example: 5 = 1-4 clicks fine, 5-8 clicks coarse.
+          default: 5
           selector:
             number:
               min: 2
               max: 8
               step: 1
               mode: slider
-        accel_fine_multiplier:
-          name: Fine (slow turn) multiplier
-          description: |
-            Step multiplier per click for slow turns.
-            Example: 0.5 with a 10% dimmer step = 5% per click.
-          default: 0.5
+        accel_fine_step:
+          name: Fine (slow turn) step (%)
+          description: Brightness change for a slow turn.
+          default: 2
           selector:
             number:
-              min: 0.1
-              max: 5
-              step: 0.1
+              min: 0.5
+              max: 100
+              step: 0.5
+              unit_of_measurement: "%"
               mode: box
-        accel_coarse_multiplier:
-          name: Coarse (fast spin) multiplier
+        accel_fine_per_click:
+          name: Fine step is per click
           description: |
-            Step multiplier per click for fast spins.
-            Example: 1.5 with a 10% dimmer step = 15% per click, so a 6-click spin moves 90%.
-          default: 1.5
+            On: fine step x number of clicks (3 clicks at 2% = 6%).
+            Off: fine step once per turn, however many clicks (always 2%).
+          default: true
+          selector:
+            boolean:
+        accel_coarse_step:
+          name: Coarse (fast spin) step (%)
+          description: Brightness change for a fast spin.
+          default: 10
           selector:
             number:
-              min: 0.1
-              max: 10
-              step: 0.1
+              min: 0.5
+              max: 100
+              step: 0.5
+              unit_of_measurement: "%"
               mode: box
+        accel_coarse_per_click:
+          name: Coarse step is per click
+          description: |
+            On: coarse step x number of clicks (6 clicks at 10% = 60%).
+            Off: coarse step once per spin, however many clicks (always 10%).
+          default: false
+          selector:
+            boolean:
 
     # ---------------------------------------------------------------------------
     # ENHANCED: range-limit feedback (duck)
@@ -976,11 +1010,29 @@ action:
           fine
         {% endif %}
   - variables:
-      scroll_multiplier: >-
-        {{ {'normal': 1, 'fine': var_accel_fine_multiplier | float(1),
-            'coarse': var_accel_coarse_multiplier | float(1)}[scroll_speed] }}
+      # dimmer step for the active evaluation mode
+      dim_step_now: >-
+        {{ var_dim_step_pct_instant | float(0)
+           if (vars['scroll_wheel_mode_ext_' ~ channel] == 'instant' and (var_dim_step_pct_instant | float(0)) > 0)
+           else var_dim_step_pct | float(10) }}
   - variables:
-      scroll_units: "{{ (scroll_clicks | float(1)) * (scroll_multiplier | float(1)) }}"
+      # change for this turn, in dimmer percent ('normal' = original behaviour)
+      scroll_step_pct: >-
+        {% set clicks = scroll_clicks | float(1) %}
+        {% if scroll_speed == 'fine' %}
+          {{ (var_accel_fine_step | float(2)) * (clicks if var_accel_fine_per_click else 1) }}
+        {% elif scroll_speed == 'coarse' %}
+          {{ (var_accel_coarse_step | float(10)) * (clicks if var_accel_coarse_per_click else 1) }}
+        {% else %}
+          {{ clicks * (dim_step_now | float(10)) }}
+        {% endif %}
+  - variables:
+      # same change expressed in "normal steps", used by every mode
+      scroll_units: >-
+        {{ (scroll_step_pct | float(0)) / (dim_step_now | float(10))
+           if (dim_step_now | float(0)) > 0 else (scroll_clicks | float(1)) }}
+  - variables:
+      scroll_multiplier: "{{ (scroll_units | float(1)) / (scroll_clicks | float(1)) }}"
       user_action_key: >-
         {% if event_kind == 'scroll' %}
           {{ ('scroll_user_' ~ channel) if scroll_wheel_mode == 'user defined' else 'none' }}
@@ -1218,8 +1270,8 @@ action:
                               entity_id: "{{ repeat.item }}"
                             data:
                               brightness_step_pct: >-
-                                      {{ iif(scroll_direction == 'right', scroll_units * var_dim_step_pct,
-                                      -1*([scroll_units * var_dim_step_pct, state_attr(repeat.item, 'brightness')*100/254
+                                      {{ iif(scroll_direction == 'right', scroll_units * dim_step_now,
+                                      -1*([scroll_units * dim_step_now, state_attr(repeat.item, 'brightness')*100/254
                                        - var_min_pct]|min))
                                       }}
                               transition: "{{ var_light_transition_duration }}"
@@ -1361,6 +1413,7 @@ variables:
 
   var_min_pct: !input dim_min_pct
   var_dim_step_pct: !input dim_step_pct
+  var_dim_step_pct_instant: !input dim_step_pct_instant
   var_dim_turns_lights_on: !input dim_turns_lights_on
   var_dim_turn_on_pct: !input dim_turn_on_pct
   var_color_hue_step: !input color_hue_step
@@ -1378,8 +1431,10 @@ variables:
   # ENHANCED: scroll acceleration
   var_accel_enabled: !input accel_enabled
   var_accel_threshold: !input accel_threshold_clicks
-  var_accel_fine_multiplier: !input accel_fine_multiplier
-  var_accel_coarse_multiplier: !input accel_coarse_multiplier
+  var_accel_fine_step: !input accel_fine_step
+  var_accel_fine_per_click: !input accel_fine_per_click
+  var_accel_coarse_step: !input accel_coarse_step
+  var_accel_coarse_per_click: !input accel_coarse_per_click
 
   # ENHANCED: range-limit feedback
   var_duck_top_enabled: !input duck_top_enabled
