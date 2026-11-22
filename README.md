@@ -56,6 +56,12 @@ It then restores its previous state, turns off, or stays as it is, depending on 
 * Optional **extra start/end actions** let you signal busy on something that isn't a light.
 * An action only counts as busy if the automation waits for it. Calling `script.my_script` directly waits, but `script.turn_on` doesn't.
 
+### 4. Turn-on brightness
+*Section: "Global light settings"*
+
+With **Dim turns lights on** enabled, scrolling up on a light that is off normally brings back its previous brightness.
+Set **Turn-on brightness** (e.g. `2`) to always start at that level instead. `0` keeps the original behaviour.
+
 ## Known limits
 * Acceleration only works in relaxed mode.
 * Hue has no end stop (it wraps around), so it has no limit cue.

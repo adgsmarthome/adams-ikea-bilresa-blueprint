@@ -18,7 +18,7 @@ blueprint:
       Requires script.light_color_temp_helper and script.light_color_hs_helper for the color
       modes, exactly like the original blueprint.
 
-      Version: 2026-11-22 (based on upstream 2026-04-06)
+      Version: 2026-11-22.2 (based on upstream 2026-04-06)
       Original: https://community.home-assistant.io/t/ikea-bilresa-scroll-wheel-blueprint-matter/965365
       Fork: https://github.com/adgsmarthome/adams-ikea-bilresa-blueprint
   domain: automation
@@ -369,6 +369,19 @@ blueprint:
           default: false
           selector:
             boolean:
+        dim_turn_on_pct:
+          name: Turn-on brightness
+          description: |
+            Brightness (%) a light turns on at when you scroll up while it is off
+            (needs <Dim turns lights on>). 0 = previous brightness (original behaviour).
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: box
 
         min_color_temp:
           name: Minimum color temperature
@@ -1211,11 +1224,21 @@ action:
                                       }}
                               transition: "{{ var_light_transition_duration }}"
                         else:
-                          - action: light.turn_on
-                            target:
-                              entity_id: "{{ repeat.item }}"
-                            data:
-                              transition: "{{ var_light_transition_duration }}"
+                          # light is off: turn on at <Turn-on brightness>, or previous brightness if 0
+                          - if: "{{ var_dim_turn_on_pct | float(0) > 0 }}"
+                            then:
+                              - action: light.turn_on
+                                target:
+                                  entity_id: "{{ repeat.item }}"
+                                data:
+                                  brightness_pct: "{{ var_dim_turn_on_pct }}"
+                                  transition: "{{ var_light_transition_duration }}"
+                            else:
+                              - action: light.turn_on
+                                target:
+                                  entity_id: "{{ repeat.item }}"
+                                data:
+                                  transition: "{{ var_light_transition_duration }}"
               # scroll wheel mode: <lights: color temp>
               - conditions:
                 - condition: template
@@ -1339,6 +1362,7 @@ variables:
   var_min_pct: !input dim_min_pct
   var_dim_step_pct: !input dim_step_pct
   var_dim_turns_lights_on: !input dim_turns_lights_on
+  var_dim_turn_on_pct: !input dim_turn_on_pct
   var_color_hue_step: !input color_hue_step
   var_color_saturation: !input color_saturation
   var_min_color_temp: !input min_color_temp
