@@ -1,0 +1,1502 @@
+blueprint:
+  name: Ikea BILRESA scroll wheel (enhanced)
+  description: |
+      Blueprint for Ikea Bilresa Matter (button and scroll wheel for 3 different channels)
+
+      Enhanced fork of jhol-byte's "Ikea_bilresa_scroll_wheel" blueprint. Everything from the
+      original still works the same; the additions below are all optional and off by default:
+
+      * **Scroll acceleration** - a slow turn of a few clicks makes fine adjustments, a fast
+        spin makes big ones. Both levels and the threshold are configurable.
+      * **Range-limit feedback (duck)** - when a light is already at the top or bottom of its
+        range, it briefly dips (or bumps) and returns, so you can feel the end stop.
+        Top and bottom can be enabled independently.
+      * **Busy indicator** - if a button / user-defined action is still running after a few
+        seconds (e.g. a script with a delay), another light pulses until it is done, then
+        returns to its previous state.
+
+      Requires script.light_color_temp_helper and script.light_color_hs_helper for the color
+      modes, exactly like the original blueprint.
+
+      Version: 2026-11-22 (based on upstream 2026-04-06)
+      Original: https://community.home-assistant.io/t/ikea-bilresa-scroll-wheel-blueprint-matter/965365
+      Fork: https://github.com/adgsmarthome/ikea-bilresa-blueprint
+  domain: automation
+  source_url: https://github.com/adgsmarthome/ikea-bilresa-blueprint/blob/main/blueprints/automation/adgsmarthome/ikea_bilresa_scroll_wheel_enhanced.yaml
+  homeassistant:
+    min_version: "2024.10.0"
+
+  # input selectors
+  input:
+    remote:
+      name: Remote
+      description: "Ikea Bilresa scroll wheel remote control"
+      selector:
+        device:
+          filter:
+            manufacturer: IKEA of Sweden
+            model: BILRESA scroll wheel
+            integration: matter
+
+    # input selectors: channel 1
+    channel1_section:
+      name: Channel 1
+      collapsed: true
+      input:
+        click_action_ch1:
+          name: "Channel 1: <click> action"
+          default: []
+          selector:
+            action: {}
+        double_click_action_ch1:
+          name: "Channel 1: <double-click> action"
+          default: []
+          selector:
+            action: {}
+        triple_click_action_ch1:
+          name: "Channel 1: <triple-click> action"
+          default: []
+          selector:
+            action: {}
+        long_click_action_ch1:
+          name: "Channel 1: <long-click> action"
+          description: ""
+          default: []
+          selector:
+            action: {}
+        on_hold_action_ch1:
+          name: "Channel 1: <on-hold> action"
+          description: "repeat action until button is released, see also on_hold_delay"
+          default: []
+          selector:
+            action: {}
+        scroll_wheel_target_ch1:
+          name: "Channel 1: Scroll wheel target entity"
+          description: |
+            Light or media player to be controlled by scroll wheel for channel 1
+            - empty for <user defined> scroll wheel mode
+          selector:
+            entity:
+              multiple: true
+              filter:
+                domain:
+                - light
+                - media_player
+
+          default: []
+        scroll_wheel_mode_ch1:
+          selector:
+            select:
+              options:
+                - "lights: dim"
+                - "lights: color temp and color hue"
+                - "lights: color temp only"
+                - "lights: color hue only"
+                - "media: volume control"
+                - "dynamic: choose from input_select"
+                - "user defined"
+          default: "lights: dim"
+          name: "Channel 1: Scroll wheel mode"
+          description: "Select attribute of target entity controlled by scroll wheel"
+        scroll_wheel_mode_dynamic_ch1:
+          selector:
+            entity:
+              filter:
+                domain:
+                - input_select
+          default:
+          name: "Channel 1: Scroll wheel mode input_select"
+          description: |-
+            For scroll wheel mode <dynamic> only, leave empty otherwise.
+            Create and choose an 'input_select' containing the scroll wheel modes you want to choose from dynamically, e.g.
+            - "lights: dim"
+            - "lights: color temp only"
+        scroll_wheel_mode_ext_ch1:
+          selector:
+            select:
+              options:
+                - "relaxed"
+                - "instant"
+          default: "relaxed"
+          name: "Channel 1: Scroll wheel evaluation mode"
+          description: |
+            <relaxed>: one action call after scrolling
+            <instant>: many action calls while scrolling
+
+            Beware:
+            for <instant> mode the 9 hidden sensor entities of Bilresa device have to be enabled
+        scroll_wheel_user_action_ch1:
+          name: "Channel 1: User defined scroll wheel action"
+          description: |
+            For scroll wheel mode <user defined> only
+            Exposed variables:
+            - <scroll_clicks>: for <instant> mode always 1, for <relaxed> mode number between 1 to 8
+            - <scroll_direction>: 'left' or 'right'
+            - <scroll_speed>: 'fine', 'coarse' or 'normal' (see Scroll acceleration)
+            - <scroll_multiplier>: step multiplier for this turn (1 when acceleration is off)
+            - <scroll_units>: scroll_clicks x scroll_multiplier (use this instead of scroll_clicks to honour acceleration)
+          default: []
+          selector:
+            action: {}
+
+    # input selectors: channel 2
+    channel2_section:
+      name: Channel 2
+      collapsed: true
+      input:
+        click_action_ch2:
+          name: "Channel 2: <click> action"
+          default: []
+          selector:
+            action: {}
+        double_click_action_ch2:
+          name: "Channel 2: <double-click> action"
+          default: []
+          selector:
+            action: {}
+        triple_click_action_ch2:
+          name: "Channel 2: <triple-click> action"
+          default: []
+          selector:
+            action: {}
+        long_click_action_ch2:
+          name: "Channel 2: <long-click> action"
+          description: ""
+          default: []
+          selector:
+            action: {}
+        on_hold_action_ch2:
+          name: "Channel 2: <on-hold> action"
+          description: "repeat action until button is released, see also on_hold_delay"
+          default: []
+          selector:
+            action: {}
+        scroll_wheel_target_ch2:
+          name: "Channel 2: Scroll wheel target entity"
+          description: |
+            Light or media player to be controlled by scroll wheel for channel 2
+            - empty for <user defined> scroll wheel mode
+          selector:
+            entity:
+              multiple: true
+              filter:
+                domain:
+                - light
+                - media_player
+          default: []
+        scroll_wheel_mode_ch2:
+          selector:
+            select:
+              options:
+                - "lights: dim"
+                - "lights: color temp and color hue"
+                - "lights: color temp only"
+                - "lights: color hue only"
+                - "media: volume control"
+                - "dynamic: choose from input_select"
+                - "user defined"
+          default: "lights: dim"
+          name: "Channel 2: Scroll wheel mode"
+          description: "Select attribute of target entity controlled by scroll wheel"
+        scroll_wheel_mode_dynamic_ch2:
+          selector:
+            entity:
+              filter:
+                domain:
+                - input_select
+          default:
+          name: "Channel 2: Scroll wheel mode input_select"
+          description: |-
+            For scroll wheel mode <dynamic> only, leave empty otherwise.
+            Create and choose an 'input_select' containing the scroll wheel modes you want to choose from dynamically, e.g.
+            - "lights: dim"
+            - "lights: color temp only"
+        scroll_wheel_mode_ext_ch2:
+          selector:
+            select:
+              options:
+                - "relaxed"
+                - "instant"
+          default: "relaxed"
+          name: "Channel 2: Scroll wheel evaluation mode"
+          description: |
+            - <relaxed>: one action call after scrolling
+            - <instant>: many action calls while scrolling
+
+            Beware:
+            - for <instant> mode the 9 hidden sensor entities of Bilresa device have to be enabled
+        scroll_wheel_user_action_ch2:
+          name: "Channel 2: User defined scroll wheel action"
+          description: |
+            For scroll wheel mode <user defined> only
+            Exposed variables:
+            - <scroll_clicks>: for <instant> mode always 1, for <relaxed> mode number between 1 to 8
+            - <scroll_direction>: 'left' or 'right'
+            - <scroll_speed>: 'fine', 'coarse' or 'normal' (see Scroll acceleration)
+            - <scroll_multiplier>: step multiplier for this turn (1 when acceleration is off)
+            - <scroll_units>: scroll_clicks x scroll_multiplier (use this instead of scroll_clicks to honour acceleration)
+          default: []
+          selector:
+            action: {}
+
+
+    # input selectors: channel 3
+    channel3_section:
+      name: Channel 3
+      collapsed: true
+      input:
+        click_action_ch3:
+          name: "Channel 3: <click> action"
+          default: []
+          selector:
+            action: {}
+        double_click_action_ch3:
+          name: "Channel 3: <double-click> action"
+          default: []
+          selector:
+            action: {}
+        triple_click_action_ch3:
+          name: "Channel 3: <triple-click> action"
+          default: []
+          selector:
+            action: {}
+        long_click_action_ch3:
+          name: "Channel 3: <long-click> action"
+          description: ""
+          default: []
+          selector:
+            action: {}
+        on_hold_action_ch3:
+          name: "Channel 3: <on-hold> action"
+          description: "repeat action until button is released, see also on_hold_delay"
+          default: []
+          selector:
+            action: {}
+        scroll_wheel_target_ch3:
+          name: "Channel 3: Scroll wheel target entity"
+          description: |
+            Light or media player to be controlled by scroll wheel for channel 3
+            - empty for <user defined> scroll wheel mode
+          selector:
+            entity:
+              multiple: true
+              filter:
+                domain:
+                - light
+                - media_player
+          default: []
+        scroll_wheel_mode_ch3:
+          selector:
+            select:
+              options:
+                - "lights: dim"
+                - "lights: color temp and color hue"
+                - "lights: color temp only"
+                - "lights: color hue only"
+                - "media: volume control"
+                - "dynamic: choose from input_select"
+                - "user defined"
+          default: "lights: dim"
+          name: "Channel 3: Scroll wheel mode"
+          description: "Select attribute of target entity controlled by scroll wheel"
+        scroll_wheel_mode_dynamic_ch3:
+          selector:
+            entity:
+              filter:
+                domain:
+                - input_select
+          default:
+          name: "Channel 3: Scroll wheel mode input_select"
+          description: |-
+            For scroll wheel mode <dynamic> only, leave empty otherwise.
+            Create and choose an 'input_select' containing the scroll wheel modes you want to choose from dynamically, e.g.
+            - "lights: dim"
+            - "lights: color temp only"
+        scroll_wheel_mode_ext_ch3:
+          selector:
+            select:
+              options:
+                - "relaxed"
+                - "instant"
+          default: "relaxed"
+          name: "Channel 3: Scroll wheel evaluation mode"
+          description: |
+            - <relaxed>: one action call after scrolling
+            - <instant>: many action calls while scrolling
+
+            Beware:
+            - for <instant> mode the 9 hidden sensor entities of Bilresa device have to be enabled
+        scroll_wheel_user_action_ch3:
+          name: "Channel 3: User defined scroll wheel action"
+          description: |
+            For scroll wheel mode <user defined> only
+            Exposed variables:
+            - <scroll_clicks>: for <instant> mode always 1, for <relaxed> mode number between 1 to 8
+            - <scroll_direction>: 'left' or 'right'
+            - <scroll_speed>: 'fine', 'coarse' or 'normal' (see Scroll acceleration)
+            - <scroll_multiplier>: step multiplier for this turn (1 when acceleration is off)
+            - <scroll_units>: scroll_clicks x scroll_multiplier (use this instead of scroll_clicks to honour acceleration)
+          default: []
+          selector:
+            action: {}
+
+
+    # input selectors: global settings for all channels
+    # global light settings
+    global_light_setting:
+      name: Global light settings
+      collapsed: true
+      input:
+        # light
+        dim_step_pct:
+          name: Dimmer step percentage
+          description: "change in brightness in %"
+          default: 10
+          selector:
+            number:
+              mode: box
+        dim_min_pct:
+          name: Minimum brightness
+          description: "minimum brightness in %"
+          default: 5
+          selector:
+            number:
+              mode: box
+        dim_turns_lights_on:
+          name: Dim turns lights on
+          description: |
+            allow scroll wheel (mode: dim) to turn lights on
+          default: false
+          selector:
+            boolean:
+
+        min_color_temp:
+          name: Minimum color temperature
+          description: "minimum color temperature in K (for color_mode = color_temp)"
+          default: 2200
+          selector:
+            number:
+              mode: box
+        max_color_temp:
+          name: Maximum color temperature
+          description: "maximum color temperature in K (for color_mode = color_temp)"
+          default: 4000
+          selector:
+            number:
+              mode: box
+        color_temp_step:
+          name: Color temperature step
+          description: "change in color temperature in K (for color_mode = color_temp)"
+          default: 100
+          selector:
+            number:
+              mode: box
+        color_hue_step:
+          name: Color hue step
+          description: "change in color hue in degree (0..360) (for color_mode = color_hue)"
+          default: 6
+          selector:
+            number:
+              mode: box
+        color_saturation:
+          name: Color saturation
+          description: "color saturation in % (for color_mode = color_hue)"
+          default: 100
+          selector:
+            number:
+              mode: box
+
+        light_transition_duration:
+          name: Transition duration
+          description: "Controls the duration of transitions"
+          default: 0.5
+          selector:
+            number:
+              mode: box
+
+
+    # global media settings
+    global_media_setting:
+      name: Global media settings
+      collapsed: true
+      input:
+        # media_player
+        volume_step_pct:
+          name: Media player volume step percentage
+          description: "change in volume in %"
+          default: 3.5
+          selector:
+            number:
+              mode: box
+        volume_use_up_down_for_instant:
+          name: "Media player: use actions volume_up/volume_down for <instant> mode"
+          description: |
+            <instant> mode uses standard actions volume_up/volume_down instead of <volume step percentage> by default
+
+            if this is to coarse disable this option and adjust the <volume step percentage> value to the lowest value which still changes the volume while scrolling in both directions
+          default: true
+          selector:
+            boolean:
+        volume_max_pct:
+          name: Media player max volume percentage
+          description: "max volume in %"
+          default: 70
+          selector:
+            number:
+              mode: box
+
+    # global misc settings
+    global_misc_setting:
+      name: Miscellaneous settings
+      collapsed: true
+      input:
+        # misc
+        auto_reset_time_input_select_helpers:
+          name: Auto reset time for input_select helpers
+          description: |
+            auto reset time for input_select helpers if > 0
+            input_selects are reset to first selection
+          default: 0
+          selector:
+            number:
+              mode: box
+              step: 60
+        on_hold_delay:
+          name: On hold delay
+          description: delay between separate action calls while on hold button
+          default: 0.1
+          selector:
+            number:
+              mode: box
+              step: 0.1
+        max_queued_automation_calls:
+          name: Max queued automation calls
+          description: |
+            Increase if you want to queue more automation calls for special cases
+          default: 10
+          selector:
+            number:
+              mode: box
+              step: 1
+
+    # ---------------------------------------------------------------------------
+    # ENHANCED: scroll acceleration (fine / coarse)
+    # ---------------------------------------------------------------------------
+    scroll_accel_setting:
+      name: "Scroll acceleration (fine / coarse)"
+      icon: mdi:speedometer
+      collapsed: true
+      input:
+        accel_enabled:
+          name: Enable fine / coarse scrolling
+          description: |
+            Tells a slow, precise turn (a few clicks) apart from a fast spin (many clicks).
+            Each level multiplies the normal step of the active mode (dim %, color temp K,
+            hue degrees, volume %) per click.
+
+            Works in <relaxed> evaluation mode, where the remote reports how many clicks one
+            turn had (1-8). <instant> mode is not affected and always uses the normal step.
+          default: false
+          selector:
+            boolean:
+        accel_threshold_clicks:
+          name: Fast-spin threshold (clicks)
+          description: |
+            A turn with at least this many clicks counts as a fast spin (coarse).
+            Anything below it is a slow turn (fine).
+          default: 4
+          selector:
+            number:
+              min: 2
+              max: 8
+              step: 1
+              mode: slider
+        accel_fine_multiplier:
+          name: Fine (slow turn) multiplier
+          description: |
+            Step multiplier per click for slow turns.
+            Example: 0.5 with a 10% dimmer step = 5% per click.
+          default: 0.5
+          selector:
+            number:
+              min: 0.1
+              max: 5
+              step: 0.1
+              mode: box
+        accel_coarse_multiplier:
+          name: Coarse (fast spin) multiplier
+          description: |
+            Step multiplier per click for fast spins.
+            Example: 1.5 with a 10% dimmer step = 15% per click, so a 6-click spin moves 90%.
+          default: 1.5
+          selector:
+            number:
+              min: 0.1
+              max: 10
+              step: 0.1
+              mode: box
+
+    # ---------------------------------------------------------------------------
+    # ENHANCED: range-limit feedback (duck)
+    # ---------------------------------------------------------------------------
+    limit_feedback_setting:
+      name: "Range-limit feedback (duck)"
+      icon: mdi:arrow-collapse-vertical
+      collapsed: true
+      input:
+        duck_top_enabled:
+          name: Signal top of range
+          description: |
+            When a light is ALREADY at 100% brightness (or at max color temperature) and you
+            keep scrolling up, it dips by <Top dip amount> for a moment, then returns.
+          default: false
+          selector:
+            boolean:
+        duck_bottom_enabled:
+          name: Signal bottom of range
+          description: |
+            When a light is ALREADY at minimum brightness and you keep scrolling down, it
+            briefly bumps UP by <Bottom cue amount>, then returns (dipping below the minimum
+            could switch it off). At minimum color temperature it dips instead, unless the light is
+            too dim for a dip to be visible.
+          default: false
+          selector:
+            boolean:
+        duck_top_pct:
+          name: Top dip amount (%)
+          description: Brightness percentage points to drop at the top of the range.
+          default: 30
+          selector:
+            number:
+              min: 5
+              max: 90
+              step: 5
+              unit_of_measurement: "%"
+              mode: slider
+        duck_bottom_pct:
+          name: Bottom cue amount (%)
+          description: Brightness percentage points to bump (dim) or dip (color temp) at the bottom.
+          default: 15
+          selector:
+            number:
+              min: 5
+              max: 90
+              step: 5
+              unit_of_measurement: "%"
+              mode: slider
+        duck_hold_time:
+          name: Cue hold time
+          description: How long the light stays at the cue level before returning (seconds).
+          default: 0.4
+          selector:
+            number:
+              min: 0.1
+              max: 3
+              step: 0.1
+              unit_of_measurement: s
+              mode: box
+        duck_transition:
+          name: Cue transition
+          description: Fade time into and out of the cue (seconds). 0 = hard blink.
+          default: 0.2
+          selector:
+            number:
+              min: 0
+              max: 2
+              step: 0.1
+              unit_of_measurement: s
+              mode: box
+        duck_pulses:
+          name: Number of pulses
+          default: 1
+          selector:
+            number:
+              min: 1
+              max: 3
+              step: 1
+              mode: slider
+        duck_color_temp:
+          name: Also signal color temperature limits
+          description: Apply the cue when scrolling past the min / max color temperature.
+          default: true
+          selector:
+            boolean:
+        duck_media:
+          name: Also signal max volume on media players
+          description: |
+            When a media player is already at <max volume> and you scroll up, the volume dips
+            briefly and returns. Uses the <Signal top of range> switch.
+          default: false
+          selector:
+            boolean:
+        duck_media_pct:
+          name: Media volume dip (%)
+          default: 10
+          selector:
+            number:
+              min: 1
+              max: 50
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+        duck_skip_when_queued:
+          name: Only one cue per spin
+          description: |
+            Skip the cue for scroll events that had to wait in the queue behind another run
+            (e.g. the rest of a fast spin, or <instant> mode clicks). Prevents a long string of
+            blinks when you keep spinning at the end stop.
+          default: true
+          selector:
+            boolean:
+
+    # ---------------------------------------------------------------------------
+    # ENHANCED: busy indicator
+    # ---------------------------------------------------------------------------
+    busy_indicator_setting:
+      name: "Busy indicator"
+      icon: mdi:timer-sand
+      collapsed: true
+      input:
+        busy_enabled:
+          name: Enable busy indicator
+          description: |
+            This automation runs in <queued> mode: while one action is still running (e.g. a
+            script that waits a minute), every new press or scroll waits in line. With this
+            enabled, an indicator light shows that the remote is busy whenever an action takes
+            longer than <Show after>. When the action finishes the light returns to its
+            previous state.
+
+            Note: actions that call a script with "script.turn_on" don't wait for the script,
+            so they never count as busy. Calling the script directly (action: script.my_script)
+            does wait.
+          default: false
+          selector:
+            boolean:
+        busy_indicator_light:
+          name: Indicator light
+          description: Light used to show the busy state (leave empty to use only the custom actions below).
+          default:
+          selector:
+            entity:
+              filter:
+                domain: light
+        busy_threshold:
+          name: Show after
+          description: Only show the indicator if the action is still running after this many seconds.
+          default: 2
+          selector:
+            number:
+              min: 0.5
+              max: 30
+              step: 0.5
+              unit_of_measurement: s
+              mode: box
+        busy_applies_to:
+          name: Watch these actions
+          description: |
+            Which actions can trigger the busy indicator.
+            Long-click is off by default because holding the button for on-hold dimming would
+            otherwise light it up.
+          default:
+            - click
+            - double_click
+            - triple_click
+            - scroll_user
+          selector:
+            select:
+              multiple: true
+              options:
+                - label: Click
+                  value: click
+                - label: Double-click
+                  value: double_click
+                - label: Triple-click
+                  value: triple_click
+                - label: Long-click / on-hold
+                  value: long_click
+                - label: User-defined scroll action
+                  value: scroll_user
+        busy_style:
+          name: Indicator style
+          default: pulse
+          selector:
+            select:
+              options:
+                - label: Pulse (breathe between high and low brightness)
+                  value: pulse
+                - label: Solid
+                  value: solid
+        busy_color:
+          name: Indicator color
+          default: [255, 140, 0]
+          selector:
+            color_rgb:
+        busy_brightness_pct:
+          name: Indicator brightness (%)
+          default: 60
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+        busy_pulse_low_pct:
+          name: Pulse low brightness (%)
+          description: Lower brightness of the pulse (pulse style only).
+          default: 10
+          selector:
+            number:
+              min: 1
+              max: 100
+              step: 1
+              unit_of_measurement: "%"
+              mode: slider
+        busy_pulse_period:
+          name: Pulse period
+          description: Seconds for one full high-low cycle (pulse style only).
+          default: 2
+          selector:
+            number:
+              min: 0.5
+              max: 10
+              step: 0.5
+              unit_of_measurement: s
+              mode: box
+        busy_after:
+          name: When finished
+          default: restore
+          selector:
+            select:
+              options:
+                - label: Restore previous state of the indicator light
+                  value: restore
+                - label: Turn the indicator light off
+                  value: "off"
+                - label: Leave it as it is
+                  value: leave
+        busy_max_duration:
+          name: Safety timeout
+          description: |
+            Stop showing the indicator after this many seconds even if the action has not
+            reported back (e.g. it failed or used "stop").
+          default: 600
+          selector:
+            number:
+              min: 10
+              max: 7200
+              step: 10
+              unit_of_measurement: s
+              mode: box
+        busy_start_action:
+          name: Extra action when busy starts
+          description: Optional. Runs when the indicator turns on (e.g. control a non-light entity).
+          default: []
+          selector:
+            action: {}
+        busy_end_action:
+          name: Extra action when busy ends
+          description: Optional. Runs after the indicator is reset.
+          default: []
+          selector:
+            action: {}
+
+
+# automation logic
+alias: Ikea_bilresa_scroll_wheel_enhanced
+trigger:
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_button_ch1 }}"
+    trigger: event
+    id: button_ch1
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_left_ch1 }}"
+    trigger: event
+    id: scroll_left_ch1
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_right_ch1 }}"
+    trigger: event
+    id: scroll_right_ch1
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_left_ext_ch1 }}"
+    trigger: event
+    id: scroll_left_ext_ch1
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_right_ext_ch1 }}"
+    trigger: event
+    id: scroll_right_ext_ch1
+
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_button_ch2 }}"
+    trigger: event
+    id: button_ch2
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_left_ch2 }}"
+    trigger: event
+    id: scroll_left_ch2
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_right_ch2 }}"
+    trigger: event
+    id: scroll_right_ch2
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_left_ext_ch2 }}"
+    trigger: event
+    id: scroll_left_ext_ch2
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_right_ext_ch2 }}"
+    trigger: event
+    id: scroll_right_ext_ch2
+
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_button_ch3 }}"
+    trigger: event
+    id: button_ch3
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_left_ch3 }}"
+    trigger: event
+    id: scroll_left_ch3
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_right_ch3 }}"
+    trigger: event
+    id: scroll_right_ch3
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_left_ext_ch3 }}"
+    trigger: event
+    id: scroll_left_ext_ch3
+  - event_type: state_changed
+    event_data:
+      entity_id: "{{ var_scroll_right_ext_ch3 }}"
+    trigger: event
+    id: scroll_right_ext_ch3
+
+
+condition:
+  - condition: template
+    value_template: >-
+      {{ trigger.event.data.old_state.state != 'unavailable'
+         and trigger.event.data.new_state.state != 'unavailable'
+      }}
+action:
+  - variables:
+      channel: >-
+        {% if trigger.id in ['button_ch1', 'scroll_left_ch1', 'scroll_right_ch1', 'scroll_left_ext_ch1', 'scroll_right_ext_ch1'] %}
+          ch1
+        {% elif trigger.id in ['button_ch2', 'scroll_left_ch2', 'scroll_right_ch2', 'scroll_left_ext_ch2', 'scroll_right_ext_ch2'] %}
+          ch2
+        {% elif trigger.id in ['button_ch3', 'scroll_left_ch3', 'scroll_right_ch3', 'scroll_left_ext_ch3', 'scroll_right_ext_ch3'] %}
+          ch3
+        {% endif %}
+  - if: "{{ var_reset_time_input_select_helpers > 0 and last_triggered_seconds > var_reset_time_input_select_helpers }}"
+    then:
+      repeat:
+        for_each:
+          - "ch1"
+          - "ch2"
+          - "ch3"
+        sequence:
+          - action: input_select.select_first
+            target:
+              entity_id: "{{ vars['scroll_wheel_mode_dynamic_' ~ repeat.item ] }}"
+
+  # ---------------------------------------------------------------------------
+  # Classify the event once: click / double_click / triple_click / long_click / scroll / none
+  # (same rules as the original blueprint's choose conditions)
+  # ---------------------------------------------------------------------------
+  - variables:
+      event_kind: >-
+        {% set t = trigger.id %}
+        {% set ext = vars['scroll_wheel_mode_ext_' ~ channel] %}
+        {% set new = trigger.event.data.new_state %}
+        {% set press_map = {'multi_press_1': 'click', 'multi_press_2': 'double_click',
+                            'multi_press_3': 'triple_click', 'long_press': 'long_click'} %}
+        {% if t == 'button_' ~ channel %}
+          {{ press_map.get(new.attributes.get('event_type', ''), 'none') }}
+        {% elif ext == 'relaxed' and t in ['scroll_left_' ~ channel, 'scroll_right_' ~ channel] %}
+          scroll
+        {% elif ext == 'instant' and t in ['scroll_left_ext_' ~ channel, 'scroll_right_ext_' ~ channel]
+                and new.state == '1' %}
+          scroll
+        {% else %}
+          none
+        {% endif %}
+  - condition: template
+    value_template: "{{ event_kind != 'none' }}"
+
+  # scroll details (harmless for button events)
+  - variables:
+      scroll_clicks: >-
+        {% if (vars['scroll_wheel_mode_ext_' ~ channel] == 'relaxed') %}
+          {{ trigger.event.data.new_state.attributes.get('totalNumberOfPressesCounted', 1) | int(1) }}
+        {% else %}
+          1
+        {% endif %}
+      scroll_direction: >-
+        {% if (trigger.id == 'scroll_left_' ~ channel) or (trigger.id == 'scroll_left_ext_' ~ channel) %}
+          left
+        {% else %}
+          right
+        {% endif %}
+      scroll_wheel_mode: >-
+        {{ vars['scroll_wheel_mode_' ~ channel] if vars['scroll_wheel_mode_' ~ channel] != 'dynamic: choose from input_select' else states(vars['scroll_wheel_mode_dynamic_' ~ channel]) }}
+  # ENHANCED: fine / coarse acceleration
+  - variables:
+      scroll_speed: >-
+        {% if not var_accel_enabled or vars['scroll_wheel_mode_ext_' ~ channel] != 'relaxed' %}
+          normal
+        {% elif scroll_clicks | int(1) >= var_accel_threshold | int(4) %}
+          coarse
+        {% else %}
+          fine
+        {% endif %}
+  - variables:
+      scroll_multiplier: >-
+        {{ {'normal': 1, 'fine': var_accel_fine_multiplier | float(1),
+            'coarse': var_accel_coarse_multiplier | float(1)}[scroll_speed] }}
+  - variables:
+      scroll_units: "{{ (scroll_clicks | float(1)) * (scroll_multiplier | float(1)) }}"
+      user_action_key: >-
+        {% if event_kind == 'scroll' %}
+          {{ ('scroll_user_' ~ channel) if scroll_wheel_mode == 'user defined' else 'none' }}
+        {% else %}
+          {{ event_kind ~ '_' ~ channel }}
+        {% endif %}
+      busy_kind: "{{ 'scroll_user' if event_kind == 'scroll' else event_kind }}"
+  - variables:
+      busy_active: "{{ var_busy_enabled and busy_kind in var_busy_applies_to }}"
+
+  - if: "{{ user_action_key != 'none' }}"
+    # -------------------------------------------------------------------------
+    # User actions (click / double / triple / long + on-hold / user-defined scroll)
+    # -------------------------------------------------------------------------
+    then:
+      - if: "{{ not busy_active }}"
+        then:
+          # same behaviour as the original blueprint
+          - &user_action_dispatch
+            choose:
+              - conditions: "{{ user_action_key == 'click_ch1' }}"
+                sequence: !input click_action_ch1
+              - conditions: "{{ user_action_key == 'click_ch2' }}"
+                sequence: !input click_action_ch2
+              - conditions: "{{ user_action_key == 'click_ch3' }}"
+                sequence: !input click_action_ch3
+              - conditions: "{{ user_action_key == 'double_click_ch1' }}"
+                sequence: !input double_click_action_ch1
+              - conditions: "{{ user_action_key == 'double_click_ch2' }}"
+                sequence: !input double_click_action_ch2
+              - conditions: "{{ user_action_key == 'double_click_ch3' }}"
+                sequence: !input double_click_action_ch3
+              - conditions: "{{ user_action_key == 'triple_click_ch1' }}"
+                sequence: !input triple_click_action_ch1
+              - conditions: "{{ user_action_key == 'triple_click_ch2' }}"
+                sequence: !input triple_click_action_ch2
+              - conditions: "{{ user_action_key == 'triple_click_ch3' }}"
+                sequence: !input triple_click_action_ch3
+              - conditions: "{{ user_action_key == 'long_click_ch1' }}"
+                sequence:
+                  - sequence: !input long_click_action_ch1
+                  - repeat:
+                      while: "{{ repeat.index < 100 and state_attr(var_button_ch1, 'event_type') == 'long_press' }}"
+                      sequence:
+                        - sequence: !input on_hold_action_ch1
+                        - delay: "{{ var_on_hold_delay }}"
+              - conditions: "{{ user_action_key == 'long_click_ch2' }}"
+                sequence:
+                  - sequence: !input long_click_action_ch2
+                  - repeat:
+                      while: "{{ repeat.index < 100 and state_attr(var_button_ch2, 'event_type') == 'long_press' }}"
+                      sequence:
+                        - sequence: !input on_hold_action_ch2
+                        - delay: "{{ var_on_hold_delay }}"
+              - conditions: "{{ user_action_key == 'long_click_ch3' }}"
+                sequence:
+                  - sequence: !input long_click_action_ch3
+                  - repeat:
+                      while: "{{ repeat.index < 100 and state_attr(var_button_ch3, 'event_type') == 'long_press' }}"
+                      sequence:
+                        - sequence: !input on_hold_action_ch3
+                        - delay: "{{ var_on_hold_delay }}"
+              - conditions: "{{ user_action_key == 'scroll_user_ch1' }}"
+                sequence: !input scroll_wheel_user_action_ch1
+              - conditions: "{{ user_action_key == 'scroll_user_ch2' }}"
+                sequence: !input scroll_wheel_user_action_ch2
+              - conditions: "{{ user_action_key == 'scroll_user_ch3' }}"
+                sequence: !input scroll_wheel_user_action_ch3
+        else:
+          # ENHANCED: busy indicator - run the action and a watcher side by side
+          - parallel:
+              # worker: the actual user action, then report "done"
+              - sequence:
+                  - *user_action_dispatch
+                  # small pause so the watcher is guaranteed to be listening
+                  - delay:
+                      milliseconds: 250
+                  - event: bilresa_enhanced_action_done
+                    event_data:
+                      automation: "{{ busy_token }}"
+              # watcher: wait <Show after>; if not done yet, show indicator until done
+              - sequence:
+                  - wait_for_trigger:
+                      - trigger: event
+                        event_type: bilresa_enhanced_action_done
+                        event_data:
+                          automation: "{{ busy_token }}"
+                    timeout:
+                      seconds: "{{ var_busy_threshold | float(2) }}"
+                    continue_on_timeout: true
+                  - if: "{{ wait.trigger is none }}"
+                    then:
+                      - variables:
+                          busy_started: "{{ as_timestamp(now()) }}"
+                          busy_has_light: "{{ var_busy_indicator_light not in [none, ''] }}"
+                          busy_pulse: "{{ var_busy_style == 'pulse' }}"
+                      - if: "{{ busy_has_light and var_busy_after == 'restore' }}"
+                        then:
+                          - action: scene.create
+                            data:
+                              scene_id: "{{ busy_scene_id }}"
+                              snapshot_entities: "{{ [var_busy_indicator_light] }}"
+                      - sequence: !input busy_start_action
+                      - repeat:
+                          sequence:
+                            - if: "{{ busy_has_light and (busy_pulse or repeat.index == 1) }}"
+                              then:
+                                - action: light.turn_on
+                                  target:
+                                    entity_id: "{{ var_busy_indicator_light }}"
+                                  data:
+                                    rgb_color: "{{ var_busy_color }}"
+                                    brightness_pct: >-
+                                      {{ var_busy_brightness_pct if (repeat.index % 2 == 1)
+                                         else var_busy_pulse_low_pct }}
+                                    transition: >-
+                                      {{ ((var_busy_pulse_period | float(2)) / 2 * 0.9) | round(2)
+                                         if busy_pulse else 0.3 }}
+                            - wait_for_trigger:
+                                - trigger: event
+                                  event_type: bilresa_enhanced_action_done
+                                  event_data:
+                                    automation: "{{ busy_token }}"
+                              timeout:
+                                seconds: >-
+                                  {{ ((var_busy_pulse_period | float(2)) / 2) if busy_pulse
+                                     else (var_busy_max_duration | float(600)) }}
+                              continue_on_timeout: true
+                          until: >-
+                            {{ wait.trigger is not none
+                               or (as_timestamp(now()) - busy_started) >= (var_busy_max_duration | float(600)) }}
+                      - choose:
+                          - conditions: "{{ busy_has_light and var_busy_after == 'restore' }}"
+                            sequence:
+                              - action: scene.turn_on
+                                target:
+                                  entity_id: "{{ 'scene.' ~ busy_scene_id }}"
+                                data:
+                                  transition: 0.5
+                          - conditions: "{{ busy_has_light and var_busy_after == 'off' }}"
+                            sequence:
+                              - action: light.turn_off
+                                target:
+                                  entity_id: "{{ var_busy_indicator_light }}"
+                                data:
+                                  transition: 0.5
+                      - sequence: !input busy_end_action
+
+    # -------------------------------------------------------------------------
+    # Built-in scroll wheel modes
+    # -------------------------------------------------------------------------
+    else:
+      # ENHANCED: work out which targets are ALREADY at a range limit (before changing anything)
+      - variables:
+          duck_allowed: >-
+            {{ (var_duck_top_enabled or var_duck_bottom_enabled)
+               and not (var_duck_skip_when_queued
+                        and (this.attributes.current | default(0) | int(0)) > 0) }}
+      - variables:
+          duck_plan: >-
+            {% set ns = namespace(lights=[], media=[]) %}
+            {% if duck_allowed %}
+              {% for e in vars['targets_entities_' ~ channel] %}
+                {% if e.startswith('light.') and is_state(e, 'on') and state_attr(e, 'brightness') is not none %}
+                  {% set b = state_attr(e, 'brightness') | int(0) %}
+                  {% set bp = b * 100 / 255 %}
+                  {% set ns2 = namespace(cue='none', tp=bp, amt=0) %}
+                  {% if scroll_wheel_mode == 'lights: dim' %}
+                    {% if scroll_direction == 'right' and b >= 254 and var_duck_top_enabled %}
+                      {% set ns2.cue = 'dip' %}
+                      {% set ns2.tp = [bp - var_duck_top_pct, 1] | max %}
+                    {% elif scroll_direction == 'left' and (b * 100 / 254 - var_min_pct) <= 1 and var_duck_bottom_enabled %}
+                      {% set ns2.cue = 'bump' %}
+                      {% set ns2.tp = [bp + var_duck_bottom_pct, 100] | min %}
+                    {% endif %}
+                  {% elif var_duck_color_temp and state_attr(e, 'color_temp_kelvin') is not none
+                          and scroll_wheel_mode in ['lights: color temp only', 'lights: color temp and color hue'] %}
+                    {% set k = state_attr(e, 'color_temp_kelvin') | int(0) %}
+                    {% set kmax = [var_max_color_temp | int(6500), state_attr(e, 'max_color_temp_kelvin') | int(100000)] | min %}
+                    {% set kmin = [var_min_color_temp | int(2000), state_attr(e, 'min_color_temp_kelvin') | int(0)] | max %}
+                    {% set ns2.amt = 0 %}
+                    {% if scroll_direction == 'right' and k >= kmax - 25 and var_duck_top_enabled %}
+                      {% set ns2.amt = var_duck_top_pct %}
+                    {% elif scroll_direction == 'left' and k <= kmin + 25 and var_duck_bottom_enabled %}
+                      {% set ns2.amt = var_duck_bottom_pct %}
+                    {% endif %}
+                    {% if ns2.amt > 0 %}
+                      {# dip if there is room to dip visibly, otherwise bump up #}
+                      {% set ns2.cue = 'dip' if bp - ns2.amt >= 5 else 'bump' %}
+                      {% set ns2.tp = (bp - ns2.amt) if ns2.cue == 'dip' else ([bp + ns2.amt, 100] | min) %}
+                    {% endif %}
+                  {% endif %}
+                  {% if ns2.cue != 'none' %}
+                    {% set ns.lights = ns.lights + [{'entity': e, 'orig': b,
+                                                     'cue': [(ns2.tp * 255 / 100) | round(0) | int, 1] | max}] %}
+                  {% endif %}
+                {% elif e.startswith('media_player.') and var_duck_media and var_duck_top_enabled
+                        and scroll_direction == 'right' and scroll_wheel_mode == 'media: volume control'
+                        and (is_state(e, 'playing') or is_state(e, 'on'))
+                        and state_attr(e, 'volume_level') is not none %}
+                  {% set v = state_attr(e, 'volume_level') | float(0) %}
+                  {% if v * 100 >= var_volume_max_pct - 0.5 %}
+                    {% set ns.media = ns.media + [{'entity': e, 'orig': v,
+                                                   'cue': [v - var_duck_media_pct / 100, 0] | max}] %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {{ {'lights': ns.lights, 'media': ns.media} }}
+
+      # normal scroll handling (original logic, steps scaled by scroll_units)
+      - repeat:
+          for_each: "{{ vars['targets_entities_' ~ channel] }}"
+          sequence:
+            - choose:
+              - conditions:
+                - condition: template
+                  value_template: "{{ scroll_wheel_mode == 'lights: dim'}}"
+                sequence:
+                  # scroll wheel mode: <lights: dim>
+                  - if:
+                      - condition: template
+                        value_template: >-
+                          {{ is_state(repeat.item, 'on') or (var_dim_turns_lights_on and scroll_direction == 'right')
+                          }}
+                    then:
+                      - if:
+                          - condition: template
+                            value_template: >-
+                              {{ is_state(repeat.item, 'on')
+                              }}
+                        then:
+                          - action: light.turn_on
+                            target:
+                              entity_id: "{{ repeat.item }}"
+                            data:
+                              brightness_step_pct: >-
+                                      {{ iif(scroll_direction == 'right', scroll_units * var_dim_step_pct,
+                                      -1*([scroll_units * var_dim_step_pct, state_attr(repeat.item, 'brightness')*100/254
+                                       - var_min_pct]|min))
+                                      }}
+                              transition: "{{ var_light_transition_duration }}"
+                        else:
+                          - action: light.turn_on
+                            target:
+                              entity_id: "{{ repeat.item }}"
+                            data:
+                              transition: "{{ var_light_transition_duration }}"
+              # scroll wheel mode: <lights: color temp>
+              - conditions:
+                - condition: template
+                  value_template: "{{ scroll_wheel_mode == 'lights: color temp only' or (scroll_wheel_mode == 'lights: color temp and color hue' and state_attr(repeat.item, 'color_temp_kelvin') is not none ) }}"
+                sequence:
+                  - action: script.light_color_temp_helper
+                    data:
+                      mode: >-
+                        {{ iif(scroll_direction == 'left', 'down', 'up')
+                        }}
+                      min_color_temp: "{{ var_min_color_temp }}"
+                      max_color_temp: "{{ var_max_color_temp }}"
+                      color_temp_step: "{{ [(var_color_temp_step * scroll_units) | round(0) | int, 1] | max }}"
+                      target_light: "{{ repeat.item }}"
+                      light_transition_duration: "{{ var_light_transition_duration }}"
+              # scroll wheel mode: <lights: color hue>
+              - conditions:
+                - condition: template
+                  value_template: "{{ scroll_wheel_mode == 'lights: color hue only' or (scroll_wheel_mode == 'lights: color temp and color hue' and state_attr(repeat.item, 'color_temp_kelvin') is none ) }}"
+                sequence:
+                  - action: script.light_color_hs_helper
+                    data:
+                      target_light: "{{ repeat.item }}"
+                      light_transition_duration: "{{ var_light_transition_duration }}"
+                      color_hue_step: "{{ [(var_color_hue_step * scroll_units) | round(0) | int, 1] | max }}"
+                      color_saturation: "{{ var_color_saturation }}"
+                      mode: >-
+                        {{ iif(scroll_direction == 'left', 'down', 'up')
+                        }}
+              # scroll wheel mode: <media: volume>
+              - conditions:
+                - condition: template
+                  value_template: "{{ scroll_wheel_mode == 'media: volume control' and (is_state(repeat.item, 'playing') or is_state(repeat.item, 'on') )}}"
+                sequence:
+                  - if:
+                      - condition: template
+                        value_template: "{{ vars['scroll_wheel_mode_ext_' ~ channel] == 'relaxed' or not var_volume_use_up_down_for_instant}}"
+                    then:
+                      - action: media_player.volume_set
+                        target:
+                          entity_id: "{{ repeat.item }}"
+                        data:
+                          volume_level: >-
+                                      {{ [[state_attr(repeat.item, 'volume_level')*100 +
+                                          iif(scroll_direction == 'right', 1, -1)* scroll_units * var_volume_step_pct, var_volume_max_pct] | min, 0] | max / 100
+                                      }}
+                    else:
+                      - if:
+                          - condition: template
+                            value_template: "{{ scroll_direction == 'left' }}"
+                        then:
+                          - action: media_player.volume_down
+                            target:
+                              entity_id: "{{ repeat.item }}"
+                        else:
+                          - if:
+                              - condition: template
+                                value_template: "{{ state_attr(repeat.item, 'volume_level')*100 < var_volume_max_pct }}"
+                            then:
+                              - action: media_player.volume_up
+                                target:
+                                  entity_id: "{{ repeat.item }}"
+
+      # ENHANCED: range-limit cue (dip / bump, then return)
+      - if: "{{ (duck_plan.lights | count) + (duck_plan.media | count) > 0 }}"
+        then:
+          - repeat:
+              count: "{{ var_duck_pulses | int(1) }}"
+              sequence:
+                - repeat:
+                    for_each: "{{ duck_plan.lights }}"
+                    sequence:
+                      - action: light.turn_on
+                        target:
+                          entity_id: "{{ repeat.item.entity }}"
+                        data:
+                          brightness: "{{ repeat.item.cue }}"
+                          transition: "{{ var_duck_transition }}"
+                - repeat:
+                    for_each: "{{ duck_plan.media }}"
+                    sequence:
+                      - action: media_player.volume_set
+                        target:
+                          entity_id: "{{ repeat.item.entity }}"
+                        data:
+                          volume_level: "{{ repeat.item.cue }}"
+                - delay:
+                    milliseconds: "{{ ((var_duck_transition | float(0) + var_duck_hold_time | float(0.4)) * 1000) | int }}"
+                - repeat:
+                    for_each: "{{ duck_plan.lights }}"
+                    sequence:
+                      - action: light.turn_on
+                        target:
+                          entity_id: "{{ repeat.item.entity }}"
+                        data:
+                          brightness: "{{ repeat.item.orig }}"
+                          transition: "{{ var_duck_transition }}"
+                - repeat:
+                    for_each: "{{ duck_plan.media }}"
+                    sequence:
+                      - action: media_player.volume_set
+                        target:
+                          entity_id: "{{ repeat.item.entity }}"
+                        data:
+                          volume_level: "{{ repeat.item.orig }}"
+                # let the light settle before the next pulse / next queued scroll event reads it
+                - delay:
+                    milliseconds: "{{ ((var_duck_transition | float(0) + 0.3) * 1000) | int }}"
+
+
+mode: queued
+max: !input max_queued_automation_calls
+max_exceeded: silent
+variables:
+  vars: {'targets_entities_ch1': !input scroll_wheel_target_ch1, 'targets_entities_ch2': !input scroll_wheel_target_ch2, 'targets_entities_ch3': !input scroll_wheel_target_ch3,
+  'scroll_wheel_mode_ch1': !input scroll_wheel_mode_ch1, 'scroll_wheel_mode_ch2': !input scroll_wheel_mode_ch2, 'scroll_wheel_mode_ch3': !input scroll_wheel_mode_ch3,
+  'scroll_wheel_mode_ext_ch1': !input scroll_wheel_mode_ext_ch1, 'scroll_wheel_mode_ext_ch2': !input scroll_wheel_mode_ext_ch2, 'scroll_wheel_mode_ext_ch3': !input scroll_wheel_mode_ext_ch3,
+  'scroll_wheel_mode_dynamic_ch1': !input scroll_wheel_mode_dynamic_ch1, 'scroll_wheel_mode_dynamic_ch2': !input scroll_wheel_mode_dynamic_ch2, 'scroll_wheel_mode_dynamic_ch3': !input scroll_wheel_mode_dynamic_ch3
+  }
+
+  var_min_pct: !input dim_min_pct
+  var_dim_step_pct: !input dim_step_pct
+  var_dim_turns_lights_on: !input dim_turns_lights_on
+  var_color_hue_step: !input color_hue_step
+  var_color_saturation: !input color_saturation
+  var_min_color_temp: !input min_color_temp
+  var_max_color_temp: !input max_color_temp
+  var_color_temp_step: !input color_temp_step
+  var_light_transition_duration: !input light_transition_duration
+  var_on_hold_delay: !input on_hold_delay
+  var_volume_step_pct: !input volume_step_pct
+  var_volume_max_pct: !input volume_max_pct
+  var_volume_use_up_down_for_instant: !input volume_use_up_down_for_instant
+  var_reset_time_input_select_helpers: !input auto_reset_time_input_select_helpers
+
+  # ENHANCED: scroll acceleration
+  var_accel_enabled: !input accel_enabled
+  var_accel_threshold: !input accel_threshold_clicks
+  var_accel_fine_multiplier: !input accel_fine_multiplier
+  var_accel_coarse_multiplier: !input accel_coarse_multiplier
+
+  # ENHANCED: range-limit feedback
+  var_duck_top_enabled: !input duck_top_enabled
+  var_duck_bottom_enabled: !input duck_bottom_enabled
+  var_duck_top_pct: !input duck_top_pct
+  var_duck_bottom_pct: !input duck_bottom_pct
+  var_duck_hold_time: !input duck_hold_time
+  var_duck_transition: !input duck_transition
+  var_duck_pulses: !input duck_pulses
+  var_duck_color_temp: !input duck_color_temp
+  var_duck_media: !input duck_media
+  var_duck_media_pct: !input duck_media_pct
+  var_duck_skip_when_queued: !input duck_skip_when_queued
+
+  # ENHANCED: busy indicator
+  var_busy_enabled: !input busy_enabled
+  var_busy_indicator_light: !input busy_indicator_light
+  var_busy_threshold: !input busy_threshold
+  var_busy_applies_to: !input busy_applies_to
+  var_busy_style: !input busy_style
+  var_busy_color: !input busy_color
+  var_busy_brightness_pct: !input busy_brightness_pct
+  var_busy_pulse_low_pct: !input busy_pulse_low_pct
+  var_busy_pulse_period: !input busy_pulse_period
+  var_busy_after: !input busy_after
+  var_busy_max_duration: !input busy_max_duration
+  busy_token: "{{ this.entity_id }}"
+  busy_scene_id: "{{ 'bilresa_busy_' ~ this.entity_id.split('.')[1] }}"
+
+  last_triggered_seconds: >
+    {{ as_timestamp(now()) - as_timestamp(this.attributes.last_triggered, 0) }}
+
+
+trigger_variables:
+  var_remote: !input remote
+
+  # get all event names from device_id only
+  var_button_ch1: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_3.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_left_ch1: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_2.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_right_ch1: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_1.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_left_ext_ch1: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^sensor\..+[a-zA-Z]_2.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_right_ext_ch1: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^sensor\..+[a-zA-Z]_1.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+
+  var_button_ch2: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_6.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_left_ch2: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_5.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_right_ch2: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_4.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_left_ext_ch2: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^sensor\..+[a-zA-Z]_5.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_right_ext_ch2: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^sensor\..+[a-zA-Z]_4.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+
+  var_button_ch3: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_9.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_left_ch3: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_8.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_right_ch3: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^event\..+[a-zA-Z]_7.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_left_ext_ch3: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^sensor\..+[a-zA-Z]_8.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
+  var_scroll_right_ext_ch3: >-
+    {% for item in device_entities(var_remote) %}
+    {% set match = item | regex_findall(find='^sensor\..+[a-zA-Z]_7.*$') %}
+    {% if (match | length) > 0 %}
+      {{ match[0] }}
+    {% endif %}
+    {% endfor %}
